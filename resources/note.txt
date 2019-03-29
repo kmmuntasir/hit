@@ -1,0 +1,8 @@
+﻿
+d_type value meanings
+----------------------
+4 - Directory
+8 - Files
+10 - Shortcuts (linux)
+
+P.S: Note that Windows Shortcuts (.lnk) are also treated as files in d_type, so the d_type value will be 8
