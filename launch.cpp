@@ -5,13 +5,17 @@
 
 using namespace std;
 
+#include "md5.h"
 #include "custom_git.h"
 
 int main() {
 
     tree root;
-    root = init_tree(".", ".");
+    root = init_tree("dir1", "dir1");
     tree_display(root);
+    cout << endl;
+    cout << stringify_tree(root) << endl << endl << endl;
+    cout << tree_hash(root) << endl;
 
     return 0;
 }

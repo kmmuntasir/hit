@@ -31,6 +31,13 @@ void file_display(file f, bool simple_view=false, int level=0) {
     }
 }
 
+string stringify_file(file f) {
+    string temp = f.f_name;
+    temp += to_string(f.f_size);
+    temp += to_string(f.f_modified);
+    return temp;
+}
+
 file prop(string path, string f_name) {
     struct stat f_stat;
     file ret_file;
@@ -67,11 +74,27 @@ tree init_tree(string path, string dirname) {
 
 void tree_display(tree current, int level=0) {
     spacer(level);
-    printf("%s ***\n", current.dirname.c_str());
+    printf("[%s]***\n", current.dirname.c_str());
     for(int i=0; i<current.dir_list.size(); ++i) {
         tree_display(current.dir_list[i], level+1);
     }
     for(int i=0; i<current.file_list.size(); ++i) {
         file_display(current.file_list[i], true, level+1);
     }
+}
+
+string stringify_tree(tree current) {
+    string temp = current.dirname;
+    for(int i=0; i<current.dir_list.size(); ++i) {
+        temp += stringify_tree(current.dir_list[i]);
+    }
+    for(int i=0; i<current.file_list.size(); ++i) {
+        temp += stringify_file(current.file_list[i]);
+    }
+    return temp;
+}
+
+string tree_hash(tree current) {
+    string temp = stringify_tree(current);
+    return md5(temp);
 }
