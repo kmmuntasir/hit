@@ -107,7 +107,7 @@ string tree_hash(tree current) {
 }
 
 bool dir_exists(string dirpath) {
-    DIR *dir = opendir(hitpath.c_str());
+    DIR *dir = opendir(dirpath.c_str());
     if (dir) { // Directory exists.
         closedir(dir);
         return true;

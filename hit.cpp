@@ -8,15 +8,15 @@
 using namespace std;
 
 string rootpath = ".";
-string hitpath = rootpath + "/.hit";
+//string hitpath = rootpath + "/.hit";
 
 #include "md5.h"
 #include "directory.h"
-#include "custom_git.h"
+#include "custom_git_mem.h" // Primary Memory Depended, no persistence available
 
 int main() {
     tree root;
-    init_app();
+//    init_app();
     root = init_tree(rootpath, rootpath);
     tree_display(root);
     cout << endl;
