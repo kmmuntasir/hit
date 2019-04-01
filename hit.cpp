@@ -2,9 +2,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+
 #define MAXN 10000
 
 using namespace std;
+
+string rootpath = ".";
+string hitpath = rootpath + "/.hit";
 
 #include "md5.h"
 #include "directory.h"
@@ -12,9 +16,8 @@ using namespace std;
 
 int main() {
     tree root;
-    string initial_directory = "dir1";
-    init_app(initial_directory);
-    root = init_tree(initial_directory, initial_directory);
+    init_app();
+    root = init_tree(rootpath, rootpath);
     tree_display(root);
     cout << endl;
     cout << stringify_tree(root) << endl << endl << endl;

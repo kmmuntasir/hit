@@ -59,7 +59,14 @@ tree init_tree(string path, string dirname) {
         while ((ent = readdir (dir)) != NULL) {
             ++cnt;
             if(cnt < 3) continue;
+            if(strcmp(ent->d_name, ".hit") == 0) continue; // For avoiding hit config folder
+
+            /* ======== Remove this section when done ========= */
             if(strcmp(ent->d_name, ".git") == 0) continue; // For avoiding git config folder
+            if(strcmp(ent->d_name, "hit") == 0) continue; // For avoiding hit executable binary file
+            if(strcmp(ent->d_name, "hit.o") == 0) continue; // For avoiding hit object file
+            /* ================================================ */
+
             if(ent->d_type == 4) ret_tree.dir_list.push_back(init_tree(path+"/"+ent->d_name, ent->d_name));
             else if(ent->d_type == 8) {
                 file temp = prop(path+"/"+ent->d_name, ent->d_name);
@@ -97,4 +104,17 @@ string stringify_tree(tree current) {
 string tree_hash(tree current) {
     string temp = stringify_tree(current);
     return md5(temp);
+}
+
+bool dir_exists(string dirpath) {
+    DIR *dir = opendir(hitpath.c_str());
+    if (dir) { // Directory exists.
+        closedir(dir);
+        return true;
+    }
+    else if (ENOENT == errno) return false; // Directory does not exist.
+//    else {
+//        printf("Unknown Error Occurred\n");
+//        return false;
+//    }
 }
