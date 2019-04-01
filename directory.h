@@ -1,9 +1,26 @@
-﻿void spacer(int level=0) {
+﻿void map_push(map <string, string> &amap, string key, string value) {
+    amap.insert(pair<string, string>(key, value));
+}
+
+string map_fetch(map <string, string> &amap, string key) {
+    return amap.find(key)->second;
+}
+
+void map_display(map <string, string> &amap) {
+    map <string, string>::iterator itr;
+    printf("%-33s | %-s\n", "Key", "Value");
+    for(itr=amap.begin(); itr != amap.end(); ++itr) {
+        printf("%-33s | %-s\n", itr->first.c_str(), itr->second.c_str());
+    }
+    printf("\n");
+}
+
+void spacer(int level=0) {
     while(level--) printf("----");
 }
 
 typedef struct{
-    string f_name;
+    string f_index, f_name;
     time_t f_modified;
     long long int f_size;
 } file;
@@ -19,9 +36,11 @@ typedef dirr tree;
 void file_display(file f, bool simple_view=false, int level=0) {
     if(simple_view) {
         spacer(level);
-        printf("%s %lld %ld\n", f.f_name.c_str(), f.f_size, f.f_modified);
+        printf("%s %s %lld %ld\n", f.f_index.c_str(), f.f_name.c_str(), f.f_size, f.f_modified);
     }
     else {
+        spacer(level);
+        printf("Index: %s\n", f.f_index.c_str());
         spacer(level);
         printf("Name: %s\n", f.f_name.c_str());
         spacer(level);
@@ -41,6 +60,7 @@ string stringify_file(file f) {
 file prop(string path, string f_name) {
     struct stat f_stat;
     file ret_file;
+    ret_file.f_index = md5(path);
     ret_file.f_name = f_name;
     int rc = stat(path.c_str(), &f_stat);
     ret_file.f_size = (rc == 0) ? f_stat.st_size : -1;
@@ -70,6 +90,7 @@ tree init_tree(string path, string dirname) {
             if(ent->d_type == 4) ret_tree.dir_list.push_back(init_tree(path+"/"+ent->d_name, ent->d_name));
             else if(ent->d_type == 8) {
                 file temp = prop(path+"/"+ent->d_name, ent->d_name);
+                map_push(fs, temp.f_index, temp.f_name);
                 ret_tree.file_list.push_back(temp);
             }
 
