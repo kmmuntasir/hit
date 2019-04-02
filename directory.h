@@ -1,26 +1,5 @@
-﻿void map_push(map <string, string> &amap, string key, string value) {
-    amap.insert(pair<string, string>(key, value));
-}
-
-string map_fetch(map <string, string> &amap, string key) {
-    return amap.find(key)->second;
-}
-
-void map_display(map <string, string> &amap) {
-    map <string, string>::iterator itr;
-    printf("%-33s | %-s\n", "Key", "Value");
-    for(itr=amap.begin(); itr != amap.end(); ++itr) {
-        printf("%-33s | %-s\n", itr->first.c_str(), itr->second.c_str());
-    }
-    printf("\n");
-}
-
-void spacer(int level=0) {
-    while(level--) printf("----");
-}
-
-typedef struct{
-    string f_index, f_name;
+﻿typedef struct{
+    string f_index, f_name, f_path;
     time_t f_modified;
     long long int f_size;
 } file;
@@ -33,10 +12,62 @@ struct dirr {
 
 typedef dirr tree;
 
+map <string, vector<file>> commit;
+
+void fs_push(map <string, string> &amap, string key, string value) {
+    amap.insert(pair<string, string>(key, value));
+}
+
+string fs_fetch(map <string, string> &amap, string key) {
+    return amap.find(key)->second;
+}
+
+void fs_display(map <string, string> &amap) {
+    map <string, string>::iterator itr;
+    printf("%-33s | %-s\n", "Key", "Value");
+    for(itr=amap.begin(); itr != amap.end(); ++itr) {
+        printf("%-33s | %-s\n", itr->first.c_str(), itr->second.c_str());
+    }
+    printf("\n");
+}
+
+void commit_push(map <string, vector<file>> &amap, string key, vector<file> value) {
+    amap.insert(pair<string, vector<file>>(key, value));
+}
+
+vector<file> commit_fetch(map <string, vector<file>> &amap, string key) {
+    return amap.find(key)->second;
+}
+
+//void commit_display(map <string, vector<file>> &amap) {
+//    map <string, vector<file>>::iterator itr;
+//    printf("%-33s | %-s\n", "Key", "Value");
+//    for(itr=amap.begin(); itr != amap.end(); ++itr) {
+//        printf("%-33s | %-s\n", itr->first.c_str(), itr->second.c_str());
+//    }
+//    printf("\n");
+//}
+
+void spacer(int level=0) {
+    while(level--) printf("----");
+}
+
+string get_file_contents(string filename) {
+  ifstream in(filename.c_str(), ios::in | ios::binary);
+  if (in) {
+    ostringstream contents;
+    contents << in.rdbuf();
+    in.close();
+    return(contents.str());
+  }
+//  throw(errno);
+}
+
+
 void file_display(file f, bool simple_view=false, int level=0) {
     if(simple_view) {
         spacer(level);
-        printf("%s %s %lld %ld\n", f.f_index.c_str(), f.f_name.c_str(), f.f_size, f.f_modified);
+        printf("%s %s %lld %ld\n", f.f_path.c_str(), f.f_name.c_str(), f.f_size, f.f_modified);
     }
     else {
         spacer(level);
@@ -60,15 +91,16 @@ string stringify_file(file f) {
 file prop(string path, string f_name) {
     struct stat f_stat;
     file ret_file;
-    ret_file.f_index = md5(path);
+    ret_file.f_path = path;
     ret_file.f_name = f_name;
     int rc = stat(path.c_str(), &f_stat);
     ret_file.f_size = (rc == 0) ? f_stat.st_size : -1;
     ret_file.f_modified = (rc == 0) ? f_stat.st_mtime : -1;
+    ret_file.f_index = md5(path+get_file_contents(path));
     return ret_file;
 }
 
-tree init_tree(string path, string dirname) {
+tree init_tree(string path, string dirname, bool is_commit=false) {
 //    printf("%s\n", path.c_str());
     tree ret_tree;
     ret_tree.dirname = dirname;
@@ -90,7 +122,10 @@ tree init_tree(string path, string dirname) {
             if(ent->d_type == 4) ret_tree.dir_list.push_back(init_tree(path+"/"+ent->d_name, ent->d_name));
             else if(ent->d_type == 8) {
                 file temp = prop(path+"/"+ent->d_name, ent->d_name);
-                map_push(fs, temp.f_index, temp.f_name);
+                if(is_commit) {
+                    fs_push(fs, temp.f_index, get_file_contents(temp.f_path));
+
+                }
                 ret_tree.file_list.push_back(temp);
             }
 

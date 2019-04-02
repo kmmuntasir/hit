@@ -10,7 +10,7 @@ using namespace std;
 string rootpath = ".";
 string head;
 //string hitpath = rootpath + "/.hit";
-map <string, string> branch, commit, fs;
+map <string, string> fs;
 
 #include "md5.h"
 #include "directory.h"
@@ -25,7 +25,7 @@ int main() {
 //    cout << stringify_tree(root) << endl << endl << endl;
     cout << tree_hash(root) << endl;
 
-    map_display(fs);
+//    fs_display(fs);
 
 
     return 0;
