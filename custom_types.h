@@ -52,7 +52,7 @@ public:
     void display(bool simple_view=false, int level=0) {
         if(simple_view) {
             spacer(level);
-            printf("%s %s %s %lld %ld\n", f_index.c_str(), f_path.c_str(), f_name.c_str(), f_size, f_modified);
+            printf("%s %s %s %s %lld %ld\n", f_index.c_str(), f_path.c_str(), f_name.c_str(), f_perm.c_str(), f_size, f_modified);
         }
         else {
             spacer(level);
@@ -102,15 +102,7 @@ public:
             int cnt = 0;
             while ((ent = readdir (dir)) != NULL) {
                 ++cnt;
-                if(cnt < 3) continue;
-                if(strcmp(ent->d_name, ".hit") == 0) continue; // For avoiding hit config folder
-
-                /* ======== Remove this section when done ========= */
-                if(strcmp(ent->d_name, ".git") == 0) continue; // For avoiding git config folder
-                if(strcmp(ent->d_name, "hit") == 0) continue; // For avoiding hit executable binary file
-                if(strcmp(ent->d_name, "hit.o") == 0) continue; // For avoiding hit object file
-                /* ================================================ */
-
+                if(cnt < 3) continue; // for avoiding . and .. directory
                 if(ent->d_type == 4) ret_tree.dir_list.push_back(init_tree(path+"/"+ent->d_name, ent->d_name, is_commit));
                 else if(ent->d_type == 8) {
                     file temp(path+"/"+ent->d_name, ent->d_name);
@@ -162,19 +154,25 @@ public:
 
 class commit {
 public:
-    string message;
+    string message, full_hash;
     vector <file> objects;
 
-    commit(string msg, vector<file>obj) {
+    commit(string msg, vector<file>obj, string hhash) {
         message = msg;
         objects = obj;
+        full_hash = hhash;
     }
 
     void display() {
         printf("Message: %s\n", message.c_str());
+        printf("Hash   : %s\n", full_hash.c_str());
         for(int i=0; i<objects.size(); ++i) {
             objects[i].display(true);
         }
+    }
+
+    bool checkout() {
+
     }
 };
 
@@ -183,11 +181,3 @@ public:
 //};
 
 vector <commit> all_commits;
-
-
-
-
-
-
-
-
