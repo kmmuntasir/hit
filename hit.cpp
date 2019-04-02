@@ -9,20 +9,14 @@ using namespace std;
 
 string rootpath = "dir";
 int head=-1;
-//string hitpath = rootpath + "/.hit";
 
-// st
-// ck
-// list
-// goto
-
-#include "md5.h"
+#include "cpp_md5.h"
+#include "directory.h"
 #include "custom_types.h"
 
 tree root;
 
-#include "directory.h"
-#include "custom_git_mem.h" // Primary Memory Depended, no persistence available
+#include "hit.h" // Primary Memory Depended, no persistence available
 
 int main() {
     init_app();
@@ -39,17 +33,20 @@ int main() {
         }
         else if(!event.compare("ck")) {
             getline(cin, message);
-            cout << message << endl;
-//            cout << "Performing Commit" << endl;
-//            perform_commit();
+            perform_commit(message);
+            cout << "Commit Successful: \"" << message << "\"" << endl;
         }
         else if(!event.compare("list")) {
             cout << "Commit List" << endl;
+            list_commits();
+        }
+        else if(!event.compare("show")) {
+            cin >> commit_no;
+            commit_details(commit_no);
         }
         else if(!event.compare("goto")) {
-            cout << "Checkout" << endl;
             cin >> commit_no;
-            cout << "Commit " << commit_no << endl;
+            checkout(commit_no);
         }
         else if(!event.compare("exit")) exit_flag=true;
         else cout << "Invalid Command\n";

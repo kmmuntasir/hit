@@ -2,7 +2,6 @@
     while(level--) printf("----");
 }
 
-
 class filesystem {
 public:
     map <string, string> fs;
@@ -83,18 +82,23 @@ public:
       }
     //  throw(errno);
     }
-};
 
-vector <file> temp_objects;
+    bool touch() {
+        ofstream ff(f_path);
+        ff << FS.fetch(f_index);
+        ff.close();
+    }
+};
 
 class tree {
 public:
-    string dirname;
+    string dirpath, dirname;
     vector <tree> dir_list;
     vector <file> file_list;
 
     tree init_tree(string path, string dir_name, bool is_commit=false) {
         tree ret_tree;
+        ret_tree.dirpath = path;
         ret_tree.dirname = dir_name;
         DIR *dir;
         struct dirent *ent;
@@ -108,7 +112,6 @@ public:
                     file temp(path+"/"+ent->d_name, ent->d_name);
                     if(is_commit) {
                         if(!FS.exists(temp.f_index)) FS.push(temp.f_index, temp.contents());
-                        temp_objects.push_back(temp);
                     }
                     ret_tree.file_list.push_back(temp);
                 }
@@ -119,6 +122,16 @@ public:
         return ret_tree;
     }
 
+    bool time_travel() {
+        for(int i=0; i<dir_list.size(); ++i) {
+            mkdir(dir_list[i].dirpath.c_str(), 755);
+            dir_list[i].time_travel();
+        }
+        for(int i=0; i<file_list.size(); ++i) {
+            file_list[i].touch();
+        }
+    }
+
     void wipe() {
         dirname = "";
         dir_list.clear();
@@ -127,7 +140,7 @@ public:
 
     void display(int level=0) {
         spacer(level);
-        printf("[%s]***\n", dirname.c_str());
+        printf("[%s]***[%s]\n", dirname.c_str(), dirpath.c_str());
         for(int i=0; i<dir_list.size(); ++i) {
             dir_list[i].display(level+1);
         }
@@ -155,24 +168,24 @@ public:
 class commit {
 public:
     string message, full_hash;
-    vector <file> objects;
+//    vector <file> objects;
+    tree structure;
 
-    commit(string msg, vector<file>obj, string hhash) {
+    commit(string msg, tree str, string hhash) {
         message = msg;
-        objects = obj;
+        structure = str;
         full_hash = hhash;
     }
 
     void display() {
         printf("Message: %s\n", message.c_str());
         printf("Hash   : %s\n", full_hash.c_str());
-        for(int i=0; i<objects.size(); ++i) {
-            objects[i].display(true);
-        }
+        structure.display();
     }
 
     bool checkout() {
-
+        remove_dir(rootpath);
+        structure.time_travel();
     }
 };
 
