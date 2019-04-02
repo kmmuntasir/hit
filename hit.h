@@ -20,6 +20,8 @@ void checkout(int h) {
     if(h >= 0 && h < all_commits.size()) {
         printf("Checkout Commit #%d\n", h+1);
         all_commits[h].checkout();
+        root.wipe();
+        root = all_commits[h].structure;
         printf("Checkout Complete\n");
     }
     else printf("Commit #%d doesn't exist\n", h+1);
@@ -31,7 +33,18 @@ void commit_details(int h) {
         printf("Details of Commit #%d\n", h+1);
         all_commits[h].display();
     }
+    else if(h==-1) {
+        root.display();
+    }
     else printf("Commit #%d doesn't exist\n", h+1);
+}
+
+void compare() {
+    tree temp;
+    temp = temp.init_tree(rootpath, rootpath);
+    printf("\n=========== Status ===========\n");
+    root.compare(temp);
+    printf("\n");
 }
 
 bool init_app() {

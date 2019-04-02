@@ -29,7 +29,7 @@ int main() {
         cin >> event;
         getchar();
         if(!event.compare("st")) {
-            cout << "Status" << endl;
+            compare();
         }
         else if(!event.compare("ck")) {
             getline(cin, message);

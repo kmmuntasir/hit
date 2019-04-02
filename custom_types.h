@@ -37,10 +37,10 @@ public:
     time_t f_modified;
     long long int f_size;
 
-    file (string path, string f_name) { // constructor
+    file (string path, string name) { // constructor
         struct stat f_stat;
         f_path = path;
-        f_name = f_name;
+        f_name = name;
         int rc = stat(path.c_str(), &f_stat);
         f_size = (rc == 0) ? f_stat.st_size : -1;
         f_modified = (rc == 0) ? f_stat.st_mtime : -1;
@@ -58,6 +58,10 @@ public:
             printf("Index: %s\n", f_index.c_str());
             spacer(level);
             printf("Name: %s\n", f_name.c_str());
+            spacer(level);
+            printf("Path: %s\n", f_path.c_str());
+            spacer(level);
+            printf("Permission: %s\n", f_perm.c_str());
             spacer(level);
             printf("Size: %lld\n", f_size);
             spacer(level);
@@ -162,6 +166,58 @@ public:
 
     string full_hash() {
         return md5(stringify());
+    }
+
+    void compare(tree t) {
+//        printf("Checking %s vs %s\n", dirpath.c_str(), t.dirpath.c_str());
+//        display();
+//        t.display();
+//        printf("\n=================\n");
+        tree blank;
+        // Checking Deleted Folder
+        for(int i=0; i<dir_list.size(); ++i) {
+            bool flag = true;
+            for(int k=0; k<t.dir_list.size() && flag; ++k) {
+                if(dir_list[i].dirname == t.dir_list[k].dirname) {
+                    flag = false;
+                    dir_list[i].compare(t.dir_list[k]);
+                }
+            }
+            if(flag) {
+                printf("Deleted: %s\n", dir_list[i].dirpath.c_str());
+                dir_list[i].compare(blank);
+            }
+        }
+        // Checking New Folder
+        for(int i=0; i<t.dir_list.size(); ++i) {
+            bool flag = true;
+            for(int k=0; k<dir_list.size() && flag; ++k) {
+                if(t.dir_list[i].dirname == dir_list[k].dirname) flag = false;
+            }
+            if(flag) {
+                printf("New: %s\n", t.dir_list[i].dirpath.c_str());
+                blank.compare(t.dir_list[i]);
+            }
+        }
+        // Checking Deleted File
+        for(int i=0; i<file_list.size(); ++i) {
+            bool flag = true;
+            for(int k=0; k<t.file_list.size() && flag; ++k) {
+                if(file_list[i].f_name == t.file_list[k].f_name) {
+                    flag = false;
+                    if(file_list[i].f_index != t.file_list[k].f_index) printf("Modifed: %s\n", file_list[i].f_path.c_str());
+                }
+            }
+            if(flag) printf("Deleted: %s\n", file_list[i].f_path.c_str());
+        }
+        // Checking New File
+        for(int i=0; i<t.file_list.size(); ++i) {
+            bool flag = true;
+            for(int k=0; k<file_list.size() && flag; ++k) {
+                if(t.file_list[i].f_name == file_list[k].f_name) flag = false;
+            }
+            if(flag) printf("New: %s\n", t.file_list[i].f_path.c_str());
+        }
     }
 };
 
