@@ -1,4 +1,5 @@
 ﻿void spacer(int level=0) {while(level--) printf("----");}
+
 void remove_dir(string path, int level=0, bool except_root=true) {
     DIR *dir;
     struct dirent *ent;
@@ -30,7 +31,16 @@ public:
         itr = fs.find(key);
         return (itr == fs.end()) ? false : true;
     }
+
+    void display() {
+        printf("%-33s | %-s\n", "Key", "Value");
+        for(itr=fs.begin(); itr != fs.end(); ++itr) {
+            printf("%-33s | %-s\n", itr->first.c_str(), itr->second.c_str());
+        }
+        printf("\n");
+    }
 };
+
 filesystem FS;
 
 class file{
@@ -120,6 +130,13 @@ public:
         file_list.clear();
     }
 
+    void display(int level=0) {
+        spacer(level);
+        printf("[%s]***[%s]\n", dirname.c_str(), dirpath.c_str());
+        for(int i=0; i<dir_list.size(); ++i) dir_list[i].display(level+1);
+        for(int i=0; i<file_list.size(); ++i) file_list[i].display(level+1);
+    }
+
     string stringify() {
         string temp = dirname;
         for(int i=0; i<dir_list.size(); ++i) temp += dir_list[i].stringify();
@@ -181,6 +198,12 @@ public:
         message = msg;
         structure = str;
         full_hash = hhash;
+    }
+
+    void display() {
+        printf("Message: %s\n", message.c_str());
+        printf("Hash   : %s\n", full_hash.c_str());
+        structure.display();
     }
 
     bool checkout() {

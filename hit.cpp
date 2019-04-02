@@ -1,19 +1,26 @@
 #include <bits/stdc++.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
 using namespace std;
+
 string rootpath = "dir";
 int head=-1;
+
 #include "cpp_md5.h"
 #include "custom_types.h"
+
 tree root;
-#include "hit.h"
+
+#include "hit.h" // Primary Memory Depended, no persistence available
 
 int main() {
+
     init_app();
     string event, message;
     int commit_no;
     bool exit_flag=false;
+
     do {
         cout << "Hit Command: ";
         cin >> event;
@@ -24,7 +31,11 @@ int main() {
             perform_commit(message);
             cout << "Commit Success: \"" << message << "\"" << endl;
         }
-        else if(!event.compare("list")) list_commits();
+        else if(!event.compare("list")) list_commits();}
+        else if(!event.compare("show")) {
+            cin >> commit_no;
+            commit_details(commit_no);
+        }
         else if(!event.compare("goto")) {
             cin >> commit_no;
             checkout(commit_no);
@@ -32,5 +43,6 @@ int main() {
         else if(!event.compare("exit")) exit_flag=true;
         else cout << "Invalid Command\n";
     } while(!exit_flag);
+
     return 0;
 }
