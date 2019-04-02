@@ -1,14 +1,26 @@
-﻿void spacer(int level=0) {
-    while(level--) printf("----");
+﻿void spacer(int level=0) {while(level--) printf("----");}
+
+void remove_dir(string path, int level=0, bool except_root=true) {
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (path.c_str())) != NULL) {
+        int cnt = 0;
+        while ((ent = readdir (dir)) != NULL) {
+            ++cnt;
+            if(cnt < 3) continue; // for avoiding . and .. directory
+            if(ent->d_type == 4) remove_dir(path+"/"+ent->d_name, level+1);
+            else remove((path+"/"+ent->d_name).c_str());
+        }
+        closedir (dir);
+        if((!except_root && level==0) || level > 0) remove(path.c_str());
+    }
 }
 
 class filesystem {
 public:
     map <string, string> fs;
     map <string, string>::iterator itr;
-    void push(string key, string value) {
-        fs.insert(pair<string, string>(key, value));
-    }
+    void push(string key, string value) {fs.insert(pair<string, string>(key, value));}
 
     string fetch(string key) {
         itr = fs.find(key);
@@ -37,7 +49,7 @@ public:
     time_t f_modified;
     long long int f_size;
 
-    file (string path, string name) { // constructor
+    file (string path, string name) {
         struct stat f_stat;
         f_path = path;
         f_name = name;
@@ -48,43 +60,21 @@ public:
         f_index = md5(path+contents());
     }
 
-    void display(bool simple_view=false, int level=0) {
-        if(simple_view) {
-            spacer(level);
-            printf("%s %s %s %s %lld %ld\n", f_index.c_str(), f_path.c_str(), f_name.c_str(), f_perm.c_str(), f_size, f_modified);
-        }
-        else {
-            spacer(level);
-            printf("Index: %s\n", f_index.c_str());
-            spacer(level);
-            printf("Name: %s\n", f_name.c_str());
-            spacer(level);
-            printf("Path: %s\n", f_path.c_str());
-            spacer(level);
-            printf("Permission: %s\n", f_perm.c_str());
-            spacer(level);
-            printf("Size: %lld\n", f_size);
-            spacer(level);
-            printf("Modified: %ld\n", f_modified);
-        }
+    void display(int level=0) {
+        spacer(level);
+        printf("%s %s %s %s %lld %ld\n", f_index.c_str(), f_path.c_str(), f_name.c_str(), f_perm.c_str(), f_size, f_modified);
     }
 
-    string stringify() {
-        string temp = f_name;
-        temp += to_string(f_size);
-        temp += to_string(f_modified);
-        return temp;
-    }
+    string stringify() {return f_name + to_string(f_size) + to_string(f_modified);}
 
     string contents() {
-      ifstream in(f_path.c_str(), ios::in | ios::binary);
-      if (in) {
-        ostringstream cont;
-        cont << in.rdbuf();
-        in.close();
-        return(cont.str());
-      }
-    //  throw(errno);
+        ifstream in(f_path.c_str(), ios::in | ios::binary);
+        if (in) {
+            ostringstream cont;
+            cont << in.rdbuf();
+            in.close();
+            return(cont.str());
+        }
     }
 
     bool touch() {
@@ -131,9 +121,7 @@ public:
             mkdir(dir_list[i].dirpath.c_str(), 755);
             dir_list[i].time_travel();
         }
-        for(int i=0; i<file_list.size(); ++i) {
-            file_list[i].touch();
-        }
+        for(int i=0; i<file_list.size(); ++i) file_list[i].touch();
     }
 
     void wipe() {
@@ -145,22 +133,14 @@ public:
     void display(int level=0) {
         spacer(level);
         printf("[%s]***[%s]\n", dirname.c_str(), dirpath.c_str());
-        for(int i=0; i<dir_list.size(); ++i) {
-            dir_list[i].display(level+1);
-        }
-        for(int i=0; i<file_list.size(); ++i) {
-            file_list[i].display(true, level+1);
-        }
+        for(int i=0; i<dir_list.size(); ++i) dir_list[i].display(level+1);
+        for(int i=0; i<file_list.size(); ++i) file_list[i].display(level+1);
     }
 
     string stringify() {
         string temp = dirname;
-        for(int i=0; i<dir_list.size(); ++i) {
-            temp += dir_list[i].stringify();
-        }
-        for(int i=0; i<file_list.size(); ++i) {
-            temp += file_list[i].stringify();
-        }
+        for(int i=0; i<dir_list.size(); ++i) temp += dir_list[i].stringify();
+        for(int i=0; i<file_list.size(); ++i) temp += file_list[i].stringify();
         return temp;
     }
 
@@ -169,12 +149,7 @@ public:
     }
 
     void compare(tree t) {
-//        printf("Checking %s vs %s\n", dirpath.c_str(), t.dirpath.c_str());
-//        display();
-//        t.display();
-//        printf("\n=================\n");
         tree blank;
-        // Checking Deleted Folder
         for(int i=0; i<dir_list.size(); ++i) {
             bool flag = true;
             for(int k=0; k<t.dir_list.size() && flag; ++k) {
@@ -188,18 +163,14 @@ public:
                 dir_list[i].compare(blank);
             }
         }
-        // Checking New Folder
         for(int i=0; i<t.dir_list.size(); ++i) {
             bool flag = true;
-            for(int k=0; k<dir_list.size() && flag; ++k) {
-                if(t.dir_list[i].dirname == dir_list[k].dirname) flag = false;
-            }
+            for(int k=0; k<dir_list.size() && flag; ++k) if(t.dir_list[i].dirname == dir_list[k].dirname) flag = false;
             if(flag) {
                 printf("New: %s\n", t.dir_list[i].dirpath.c_str());
                 blank.compare(t.dir_list[i]);
             }
         }
-        // Checking Deleted File
         for(int i=0; i<file_list.size(); ++i) {
             bool flag = true;
             for(int k=0; k<t.file_list.size() && flag; ++k) {
@@ -210,12 +181,9 @@ public:
             }
             if(flag) printf("Deleted: %s\n", file_list[i].f_path.c_str());
         }
-        // Checking New File
         for(int i=0; i<t.file_list.size(); ++i) {
             bool flag = true;
-            for(int k=0; k<file_list.size() && flag; ++k) {
-                if(t.file_list[i].f_name == file_list[k].f_name) flag = false;
-            }
+            for(int k=0; k<file_list.size() && flag; ++k) if(t.file_list[i].f_name == file_list[k].f_name) flag = false;
             if(flag) printf("New: %s\n", t.file_list[i].f_path.c_str());
         }
     }
@@ -224,7 +192,6 @@ public:
 class commit {
 public:
     string message, full_hash;
-//    vector <file> objects;
     tree structure;
 
     commit(string msg, tree str, string hhash) {
@@ -244,9 +211,5 @@ public:
         structure.time_travel();
     }
 };
-
-//class branch {
-//
-//};
 
 vector <commit> all_commits;

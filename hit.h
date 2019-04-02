@@ -1,5 +1,4 @@
-﻿
-void perform_commit(string message) {
+﻿void perform_commit(string message) {
     root.wipe();
     root = root.init_tree(rootpath, rootpath, true);
     commit temp(message, root, root.full_hash());
@@ -9,9 +8,7 @@ void perform_commit(string message) {
 
 void list_commits() {
     printf("================= Commit List ==============\n");
-    for(int i=all_commits.size()-1; i>=0; --i) {
-        printf("Commit %2d | %s\n", i+1, all_commits[i].message.c_str());
-    }
+    for(int i=all_commits.size()-1; i>=0; --i) printf("Commit %2d | %s\n", i+1, all_commits[i].message.c_str());
     printf("============================================\n");
 }
 
@@ -23,8 +20,7 @@ void checkout(int h) {
         root.wipe();
         root = all_commits[h].structure;
         printf("Checkout Complete\n");
-    }
-    else printf("Commit #%d doesn't exist\n", h+1);
+    } else printf("Commit #%d doesn't exist\n", h+1);
 }
 
 void commit_details(int h) {
@@ -32,10 +28,7 @@ void commit_details(int h) {
     if(h >= 0 && h < all_commits.size()) {
         printf("Details of Commit #%d\n", h+1);
         all_commits[h].display();
-    }
-    else if(h==-1) {
-        root.display();
-    }
+    } else if(h==-1) root.display();
     else printf("Commit #%d doesn't exist\n", h+1);
 }
 
@@ -47,6 +40,4 @@ void compare() {
     printf("\n");
 }
 
-bool init_app() {
-    perform_commit("Initial Commit");
-}
+bool init_app() {perform_commit("Initial Commit");}
