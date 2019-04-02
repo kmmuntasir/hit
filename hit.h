@@ -15,21 +15,11 @@ void list_commits() {
 void checkout(int h) {
     --h;
     if(h >= 0 && h < all_commits.size()) {
-        printf("Checkout Commit #%d\n", h+1);
         all_commits[h].checkout();
         root.wipe();
         root = all_commits[h].structure;
-        printf("Checkout Complete\n");
+        printf("Checkout Commit #%d Success\n", h+1);
     } else printf("Commit #%d doesn't exist\n", h+1);
-}
-
-void commit_details(int h) {
-    --h;
-    if(h >= 0 && h < all_commits.size()) {
-        printf("Details of Commit #%d\n", h+1);
-        all_commits[h].display();
-    } else if(h==-1) root.display();
-    else printf("Commit #%d doesn't exist\n", h+1);
 }
 
 void compare() {
